@@ -1,3 +1,4 @@
+import { Spinner } from "@/components/ui/spinner";
 import { getNotes, type Note } from "@/lib/api";
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "sonner";
@@ -37,6 +38,14 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
         }
         fetchNotes();
     }, []);
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <Spinner className="size-12" />
+            </div>
+        )
+    }
 
     return (
         <NoteContext.Provider value={{ notes, setNotes, loading }}>

@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const noteWorkspaceSchema = new mongoose.Schema({
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         require: true,
     },
     openedNotes: [{

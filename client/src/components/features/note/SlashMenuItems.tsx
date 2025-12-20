@@ -100,6 +100,7 @@ export const getCustomSlashMenuItems = async (
 
             return {
                 ...item,
+                subtext: "h1",
                 update: update,
             };
         }) as CustomSlashMenuItem[];

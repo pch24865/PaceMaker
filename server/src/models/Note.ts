@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const noteSchema = new mongoose.Schema({
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: [true, "사용자를 인식할 수 없습니다."],
     },
     title: {

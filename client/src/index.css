@@ -128,6 +128,20 @@
 }
 
 /* Note Themes */
+.midnight {
+  --note-background: var(--color-gray-900);
+  --note-text-color: var(--color-white);
+  --note-drag-handle-button: var(--color-white);
+  --ring: var(--color-gray-950);
+}
+
+.codeblue {
+  --note-background: var(--color-cyan-950);
+  --note-text-color: var(--color-teal-400);
+  --note-drag-handle-button: var(--color-teal-400);
+  --ring: var(--color-cyan-900);
+}
+
 .red {
   --note-background: var(--color-red-100);
   --note-text-color: var(--color-red-900);

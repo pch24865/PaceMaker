@@ -4,6 +4,8 @@ import { io, Socket } from "socket.io-client";
 interface SocketIoContextType {
     socket: Socket | undefined;
     isConnected: boolean;
+    connectSocket: () => void;
+    disconnectSocket: () => void;
 }
 
 const SocketIoContext = React.createContext<SocketIoContextType | null>(null);
@@ -11,27 +13,41 @@ const SocketIoContext = React.createContext<SocketIoContextType | null>(null);
 export default function SocketIoProvider({ children }: { children: React.ReactNode }) {
     const [socket, setSocket] = useState<Socket | undefined>();
     const [isConnected, setIsConnected] = useState(false);
-    useEffect(() => {
-        setIsConnected(false);
+
+    function connectSocket() {
         // process.env.NODE_ENV === "production" ? "" : "http://localhost:3002"; // Vite Proxy를 사용하기 위해 제거
         const socketInstance = io("/", {
             withCredentials: true,
         });
         setSocket(socketInstance);
+    }
 
-        socketInstance.on("connect", () => {
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on("connect", () => {
             setIsConnected(true);
         });
-        socketInstance.on("disconnect", () => {
+        socket.on("disconnect", () => {
             setIsConnected(false);
         });
+
         return () => {
-            socketInstance.disconnect();
+            socket.off("connect");
+            socket.off("disconnect");
+        };
+    }, [socket]);
+
+    function disconnectSocket() {
+        if (socket) {
+            socket.disconnect();
         }
-    }, []);
+        setSocket(undefined);
+        setIsConnected(false);
+    }
 
     return (
-        <SocketIoContext.Provider value={{ socket, isConnected }}>
+        <SocketIoContext.Provider value={{ socket, isConnected, connectSocket, disconnectSocket }}>
             {children}
         </SocketIoContext.Provider>
     );

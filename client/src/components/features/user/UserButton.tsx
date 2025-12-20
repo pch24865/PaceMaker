@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthProvider";
+import { useSocketIo } from "@/contexts/SocketIoProvider";
 import { Button } from "@/components/ui/button";
 import { User as UserIcon } from "lucide-react";
 import { signout } from "@/lib/api";
@@ -15,10 +16,12 @@ import { Link } from "react-router-dom";
 
 export default function NavUserButton() {
     const { user, loading, setUser } = useAuth();
+    const { disconnectSocket } = useSocketIo();
 
     const handleSignout = async () => {
         try {
             await signout();
+            disconnectSocket();
             setUser(null);
             window.location.reload();
         } catch (error) {

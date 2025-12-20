@@ -305,7 +305,7 @@ app.delete('/api/note', requireAuth, async (req, res) => {
                 message: "노트를 찾을 수 없습니다."
             });
         }
-        if(note.userId !== userId){
+        if(note.userId.toString() !== userId.toString()){
             return res.status(401).json({
                 success: false,
                 message: "권한이 없습니다.",
@@ -340,7 +340,7 @@ app.patch('/api/note/layout', requireAuth, async (req, res) => {
                 message: "노트를 찾을 수 없습니다."
             });
         }
-        if(noteWorkspace.userId !== userId){
+        if(noteWorkspace.userId.toString() !== userId.toString()){
             return res.status(401).json({
                 success: false,
                 message: "권한이 없습니다.",
@@ -366,7 +366,7 @@ app.get('/api/note/layout', requireAuth,async (req, res) => {
         const userId = req.session.userId;
         const noteWorkspace = await NoteWorkspace.findOneAndUpdate(
             {userId},{},{upsert: true, new: true, setDefaultsOnInsert: true});
-        if(noteWorkspace.userId !== userId){
+        if(noteWorkspace.userId.toString() !== userId.toString()){
             return res.status(401).json({
                 success: false,
                 message: "권한이 없습니다.",
@@ -391,6 +391,9 @@ io.on("connection", (socket) => {
     // Todo 세션확인.
     const socketSession = socket.request.session;
     console.log(socketSession.userId);
+    if (!socketSession.userId){
+        return;
+    }
     User.findById(socketSession.userId).then((user) => {
         socket.data.name = user.name;
     })

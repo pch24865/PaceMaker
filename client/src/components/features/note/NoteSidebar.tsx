@@ -17,7 +17,7 @@ function CustomTrigger() {
     return (
         <button
             onClick={toggleSidebar}
-            className="z-50 bg-accent/0 p-2 h-[calc(100vh-4rem)] w-1 rounded-r-md group hover:bg-accent transition-colors"
+            className="z-50 bg-accent/0 p-2 h-[calc(100vh-4rem)] w-1 -translate-x-2 rounded-r-md group hover:bg-accent transition-colors"
         >
             {state === "expanded" ? <ChevronsLeft className="bg-accent/50 text-accent-foreground/50 size-8 rounded-r-full -translate-x-2 group-hover:bg-accent group-hover:text-accent-foreground transition-colors" /> : <ChevronsRight className="bg-accent/50 text-accent-foreground/50 size-8 rounded-r-full -translate-x-2 group-hover:bg-accent group-hover:text-accent-foreground transition-colors" />}
         </button>

@@ -9,7 +9,6 @@ import NotePage from "@/pages/NotePage"
 import RequireAuth from "@/components/auth/RequireAuth"
 import RequireGuest from "@/components/auth/RequireGuest"
 import StudyPage from "@/pages/StudyPage"
-import SocketIoProvider from "@/contexts/SocketIoProvider"
 import { NoteProvider } from "@/contexts/NoteProvider"
 
 
@@ -25,7 +24,7 @@ function App() {
           <Route path="/signin" element={<RequireGuest><SignInPage /></RequireGuest>} />
           <Route path="/signup" element={<RequireGuest><SignUpPage /></RequireGuest>} />
           <Route path="/note" element={<RequireAuth><NoteProvider><NotePage /></NoteProvider></RequireAuth>} />
-          <Route path="/study" element={<RequireAuth><SocketIoProvider><StudyPage /></SocketIoProvider></RequireAuth>} />
+          <Route path="/study" element={<RequireAuth><StudyPage /></RequireAuth>} />
         </Routes>
       </div>
     </>

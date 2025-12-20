@@ -84,11 +84,11 @@ function NoteWindow({
 
     // 노트 데이터 (title, contents, tag, theme) 즉시 저장
     async function saveNoteDataInstant(newTitle: string, newTheme: string, newTag: string) {
-        onContentChange({ id, title: newTitle, theme: newTheme, tag: newTag, contents });
         if (isSaving.current) {
             clearTimeout(isSaving.current);
         }
         try {
+            onContentChange({ id, title: newTitle, theme: newTheme, tag: newTag, contents });
             await saveNote({
                 id,
                 title: newTitle,
@@ -109,7 +109,6 @@ function NoteWindow({
 
     // 노트 데이터 (title, contents, tag, theme) 저장 (시간 차 두고 저장.)
     async function saveNoteData(newContents: any[]) {
-        onContentChange({ id, title, theme, tag, contents: newContents });
         if (isSaving.current) {
             clearTimeout(isSaving.current);
         }
@@ -118,6 +117,7 @@ function NoteWindow({
         }
         isSaving.current = setTimeout(async () => {
             setSaveMessage("저장 중...");
+            onContentChange({ id, title, theme, tag, contents: newContents });
             try {
                 await saveNote({
                     id,
@@ -224,7 +224,16 @@ function NoteWindow({
                                             <DropdownMenuItem onClick={() => arrayNoteSizeAndPosition(id, 0.5, 0.5, 0.5, 0.5)}><SquareArrowOutDownRight /> 오른쪽 하단</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <Button onClick={() => onClose(id)} size="icon" aria-label="Close" className="group no-drag cursor-pointer h-3 w-3 ml-1 mr-2 p-0 bg-red-500 hover:bg-red-600" />
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button onClick={saveMessage === "저장 중..." ? () => { } : () => onClose(id)} size="icon" aria-label="Close" className="group no-drag cursor-pointer h-3 w-3 ml-1 mr-2 p-0 bg-red-500 hover:bg-red-600" />
+                                        </TooltipTrigger>
+                                        {saveMessage === "저장 중..." ? (
+                                            <TooltipContent>
+                                                노트 저장중입니다. 잠시 기다려주세요.
+                                            </TooltipContent>
+                                        ) : null}
+                                    </Tooltip>
                                 </div>
                             </ContextMenuTrigger>
                             <ContextMenuContent>
