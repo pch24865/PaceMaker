@@ -136,30 +136,30 @@ export const getNotes = async (): Promise<NoteListResponse> => {
 
 // 노트 한 개 저장
 export const saveNote = async (data: SaveNoteRequest): Promise<NoteResponse> => {
-    const res = await api.patch('/api/note', data);
+    const res = await api.patch(`/api/notes/${data.id}`, data);
     return res.data;
 }
 
 // 노트 레이아웃 저장
 export const saveNoteLayout = async (data: SaveLayoutRequest): Promise<void> => {
-    const res = await api.patch('/api/note/layout', data);
+    const res = await api.patch('/api/note-layouts', data);
     return res.data;
 }
 
 // 노트 레이아웃 조회
 export const getNoteLayout = async (): Promise<LayoutResponse> => {
-    const res = await api.get('/api/note/layout');
+    const res = await api.get('/api/note-layouts');
     return res.data;
 }
 
 // 노트 생성
 export const createNote = async (data: CreateNoteRequest): Promise<CreateNoteRequest & { note: Note }> => {
-    const res = await api.post('/api/note', data);
+    const res = await api.post('/api/notes', data);
     return res.data;
 }
 
 // 노트 한개 삭제
 export const deleteNote = async (data: DeleteNoteRequest): Promise<void> => {
-    const res = await api.delete('/api/note', { data });
+    const res = await api.delete(`/api/notes/${data.id}`, { data });
     return res.data;
 }

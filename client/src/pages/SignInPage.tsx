@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { signin } from "@/lib/api";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
+import axios from "axios";
 
 const signInSchema = z.object({
     email: z.string().min(1, { message: "이메일을 입력해주세요." }).email({ message: "이메일이 올바르지 않습니다." }),
@@ -41,8 +42,8 @@ export default function SignInPage() {
             toast("로그인 성공", { description: `${res.user.name}님 환영합니다.` });
             setUser(res.user);
             navigate("/");
-        } catch (error: any) {
-            if (error.response) {
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
                 setError(error.response.data.message);
             }
             else {

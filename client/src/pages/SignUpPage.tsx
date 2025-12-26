@@ -12,6 +12,7 @@ import { useState } from "react";
 import { signup } from "@/lib/api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const signUpSchema = z.object({
     email: z.string().min(1, { message: "이메일을 입력해주세요." }).email({ message: "이메일이 올바르지 않습니다." }),
@@ -46,14 +47,14 @@ export default function SignUpPage() {
             await signup(data);
             toast("회원가입이 완료되었습니다.");
             navigate("/signin");
-        } catch (error: any) {
-            if (error.status === 409) {
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.status === 409) {
                 form.setError("email", {
                     type: "manual",
                     message: "이미 사용 중인 이메일입니다."
                 }, { shouldFocus: true });
             }
-            else if (error.response.data.message) {
+            else if (axios.isAxiosError(error) && error.response?.data.message) {
                 setError(error.response.data.message);
             }
             else {

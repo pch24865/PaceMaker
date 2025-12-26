@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { noteThemes } from "@/lib/noteThemes";
 import { useNote } from "@/contexts/NoteProvider";
 import NoteSidebar from "@/components/features/note/NoteSidebar";
+import axios from "axios";
 
 
 export default function NotePage() {
@@ -160,8 +161,8 @@ export default function NotePage() {
         }));
         try {
             await saveNoteLayout({ openedNotes: data });
-        } catch (error: any) {
-            if (error.response) {
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
                 toast(error.response.data.message);
             } else {
                 toast("오류가 발생했습니다.");
@@ -176,8 +177,8 @@ export default function NotePage() {
             setOpenedNotes(prev => prev.filter(openedNote => openedNote.noteId !== id));
             setNotes(prev => prev.filter(note => note._id !== id));
             toast("노트가 삭제되었습니다.");
-        } catch (error: any) {
-            if (error.response) {
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
                 toast(error.response.data.message);
             } else {
                 toast("오류가 발생했습니다.");
@@ -243,15 +244,15 @@ export default function NotePage() {
                     setOpenedNotes(newOpenedNotesList);
                     saveNoteLayoutHandler(newOpenedNotesList);
 
-                } catch (error: any) {
-                    if (error.response) {
+                } catch (error) {
+                    if (axios.isAxiosError(error) && error.response) {
                         toast(error.response.data.message);
                     } else {
                         toast("레이아웃 저장 중 오류가 발생했습니다. 노트를 직접 열어주세요.");
                     }
                 }
-            } catch (error: any) {
-                if (error.response) {
+            } catch (error) {
+                if (axios.isAxiosError(error) && error.response) {
                     setCreateNoteTitleError(true);
                     setCreateNoteErrorMessage(error.response.data.message);
                 } else {
