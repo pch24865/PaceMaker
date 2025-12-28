@@ -1,0 +1,141 @@
+import { PartyCard } from "@/components/features/party/PartyCard";
+import { PartyPagination } from "@/components/features/party/PartyPagination";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getParties } from "@/lib/api";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import z from "zod";
+
+export default function PartyPage() {
+    const [parties, setParties] = useState([]);
+    const [searchParams] = useSearchParams();
+    const [searchText, setSearchText] = useState("");
+    const [lastPage, setLastPage] = useState(0);
+    const navigate = useNavigate();
+    const categories = ['자율', '어학', '취업', '고시/공무원', '취미/교양', '프로그래밍', '수험', '기타'];
+
+    const createPartySchema = z.object({
+        title: z.string().min(6, { message: "제목의 최소길이는 6글자 입니다." }),
+        categories: z.array(z.enum(categories)).min(1, { message: "카테고리를 선택해주세요." }),
+        content: z.string().min(6, { message: "내용의 최소길이는 6글자 입니다." }),
+        maximumCapacity: z.number().min(2, { message: "최소인원은 2명 이상이어야 합니다." }),
+        startDate: z.date().min(new Date(), { message: "시작일은 오늘 이후여야 합니다." }),
+        requiresApproval: z.boolean().default(false),
+        isOffline: z.boolean().default(true),
+        location: z.string().min(6, { message: "장소의 최소길이는 6글자 입니다." }),
+    });
+
+    const form = useForm<z.infer<typeof createPartySchema>>({
+        resolver: zodResolver(createPartySchema),
+        defaultValues: {
+            title: "",
+            categories: [],
+            content: "",
+            maximumCapacity: 2,
+            startDate: new Date(),
+            requiresApproval: false,
+            isOffline: true,
+            location: "",
+        },
+    });
+
+    const onSubmit = async (values: z.infer<typeof createPartySchema>) => {
+        console.log(values);
+    }
+
+    useEffect(() => {
+        const fetchParties = async () => {
+            const page = parseInt(searchParams.get('page') ?? '1') || 1;
+            const search = searchParams.get('search') || "";
+            const res = await getParties({ page, search });
+            setLastPage(res.data.lastPage);
+            setParties(res.data.parties);
+        }
+        fetchParties();
+    }, [searchParams])
+
+    const handleSearch = () => {
+        navigate(`/party?page=1&search=${searchText}`);
+    }
+
+    const handlePagination = (page: number) => {
+        const search = searchParams.get('search') || "";
+        navigate(`/party?page=${page}&search=${search}`)
+    }
+    return (
+        <div className="container max-w-6xl mx-auto">
+            <Label className="text-4xl mt-10 mb-4">스터디 파티 모집</Label>
+            <div className="flex">
+                <Label className="text-2xl mb-4">함께 성장할 스터디를 멤버를 찾아보세요.</Label>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button className="ml-auto">모집글 올리기</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                                <FormField
+                                    control={form.control}
+                                    name="title"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>제목</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="제목을 입력해주세요." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit">Submit</Button>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            <div className="flex w-full items-center">
+                <div className="relative flex-1 my-6">
+
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" />
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSearch();
+                    }}>
+                        <Input
+                            type="text"
+                            placeholder="제목 또는 내용을 검색하세요."
+                            className="pl-10 h-10 rounded-full w-full bg-secondary/50 border-none"
+                            onChange={(e) => { setSearchText(e.target.value) }}
+                        />
+                    </form>
+                </div>
+                <Select>
+                    <SelectTrigger className="w-1/5 ml-3 rounded-full">
+                        <SelectValue placeholder="카테고리를 선택해주세요." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <Label className="text-12 text-muted-foreground">카테고리</Label>
+                            <hr className="my-1" />
+                            <SelectItem value="all">전체</SelectItem>
+                            {categories.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                {parties.map((party) => <PartyCard party={party} />)}
+            </div>
+
+            <PartyPagination currentPage={parseInt(searchParams.get('page') ?? '1') || 1} totalPages={lastPage} onPageChange={handlePagination} />
+        </div>
+    );
+}

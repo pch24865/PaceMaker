@@ -140,7 +140,7 @@ function NoteWindow({
         }, 5000); // 몇 초 간 변경없을 시 저장할 지 설정.
     }
 
-    const onNoteDataChangeSubmit = () => {
+    const onNoteDataChangeSubmit = async () => {
         const noteTitleSchma = z.string().min(1, "노트 제목을 입력해주세요.");
         const result = noteTitleSchma.safeParse(noteTitle);
         if (!result.success) {
@@ -149,7 +149,7 @@ function NoteWindow({
             return;
         }
 
-        saveNoteDataInstant(noteTitle, noteTheme, noteTag);
+        await saveNoteDataInstant(noteTitle, noteTheme, noteTag);
         setIsDialogOpen(false);
         setChangeNoteTitleError(false);
         setChangeNoteTitleMessage("");

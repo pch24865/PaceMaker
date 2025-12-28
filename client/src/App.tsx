@@ -10,6 +10,7 @@ import RequireAuth from "@/components/auth/RequireAuth"
 import RequireGuest from "@/components/auth/RequireGuest"
 import StudyPage from "@/pages/StudyPage"
 import { NoteProvider } from "@/contexts/NoteProvider"
+import PartyPage from "@/pages/PartyPage"
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/signup" element={<RequireGuest><SignUpPage /></RequireGuest>} />
           <Route path="/note" element={<RequireAuth><NoteProvider><NotePage /></NoteProvider></RequireAuth>} />
           <Route path="/study" element={<RequireAuth><StudyPage /></RequireAuth>} />
+          <Route path="/party" element={<PartyPage/>} />
         </Routes>
       </div>
     </>

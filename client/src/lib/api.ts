@@ -86,6 +86,11 @@ export interface LayoutResponse {
     };
 }
 
+export interface getParties {
+    page: number,
+    search: string,
+}
+
 const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -162,4 +167,10 @@ export const createNote = async (data: CreateNoteRequest): Promise<CreateNoteReq
 export const deleteNote = async (data: DeleteNoteRequest): Promise<void> => {
     const res = await api.delete(`/api/notes/${data.id}`, { data });
     return res.data;
+}
+
+// 파티 목록 조회
+export const getParties = async (data:getParties) => {
+    const res = await api.get('/api/parties',{params:data});
+    return res;
 }

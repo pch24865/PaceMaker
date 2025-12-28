@@ -9,13 +9,15 @@ import { signUpSchema } from "./schemas/signup.schema.js";
 import { createNoteSchema } from "./schemas/createNote.schema.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import { requireAuth } from "./middleware/auth.js";
+import { requireAuth } from "./middleware/requireAuth.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { errorHandler } from "./middleware/errorHandler.js";
 import * as auth from "./services/auth.service.js";
 import * as note from "./services/note.service.js";
 import * as noteLayout from "./services/noteLayout.service.js";
+import * as party from "./services/party.service.js";
+import { success } from "zod";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,7 +91,6 @@ app.get("/api/auth/me", async (req, res, next) => {
     next(err);
   }
 });
-
 // 로그인
 app.post("/api/signin", async (req, res, next) => {
   try {
@@ -107,7 +108,6 @@ app.post("/api/signin", async (req, res, next) => {
     next(err);
   }
 });
-
 // 회원가입
 app.post("/api/signup", validate(signUpSchema), async (req, res, next) => {
   try {
@@ -122,7 +122,6 @@ app.post("/api/signup", validate(signUpSchema), async (req, res, next) => {
     next(err);
   }
 });
-
 // 로그아웃
 app.post("/api/signout", (req, res) => {
   req.session.destroy((error) => {
@@ -162,7 +161,6 @@ app.post(
     }
   }
 );
-
 //노트 불러오기
 app.get("/api/notes", requireAuth, async (req, res, next) => {
   try {
@@ -177,24 +175,22 @@ app.get("/api/notes", requireAuth, async (req, res, next) => {
     next(err);
   }
 });
-
 // 노트 한 개 저장
 app.patch("/api/notes/:id", requireAuth, async (req, res, next) => {
   try {
-    const { id } = req.params
+    const id  = req.params['id'];
     const { title, theme, tag, contents } = req.body;
     const userId = req.session.userId;
-    const note = await note.saveNote(id, title, theme, tag, contents, userId);
+    const newNote = await note.saveNote(id, title, theme, tag, contents, userId);
     return res.status(200).json({
       success: true,
       message: "노트 저장 완료!",
-      note,
+      note: newNote,
     });
   } catch (err) {
     next(err);
   }
 });
-
 //노트 한개 삭제
 app.delete("/api/notes/:id", requireAuth, async (req, res, next) => {
   try {
@@ -207,10 +203,9 @@ app.delete("/api/notes/:id", requireAuth, async (req, res, next) => {
       note: deletedNote,
     });
   } catch (err) {
-   next(err);
+    next(err);
   }
 });
-
 // 노트 레이아웃 저장
 app.patch("/api/note-layouts", requireAuth, async (req, res, next) => {
   try {
@@ -223,10 +218,9 @@ app.patch("/api/note-layouts", requireAuth, async (req, res, next) => {
       noteWorkspace,
     });
   } catch (err) {
-    next(err)
+    next(err);
   }
 });
-
 // 노트 레이아웃 조회
 app.get("/api/note-layouts", requireAuth, async (req, res, next) => {
   try {
@@ -238,7 +232,76 @@ app.get("/api/note-layouts", requireAuth, async (req, res, next) => {
       noteWorkspace,
     });
   } catch (err) {
-    next(err)
+    next(err);
+  }
+});
+
+// 파티 목록 조회 (페이지네이션, 검색)
+app.get("/api/parties", async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const search = req.query.search || "";
+    const { parties, lastPage } = await party.getPartys(page, search);
+    res.status(200).json({
+      success: true,
+      message: "파티 목록 조회완료.",
+      parties,
+      lastPage,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+// Todo 유효성 검사 스키마 적용해야됨.
+// 파티 등록
+app.post("/api/parties", requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const {
+      title,
+      category,
+      content,
+      tag,
+      startDate,
+      maximumCapacity,
+      requiresApproval,
+      isOffline,
+      locate,
+    } = req.body;
+    const result = await party.createParty(
+      userId,
+      title,
+      category,
+      content,
+      tag,
+      startDate,
+      maximumCapacity,
+      requiresApproval,
+      isOffline,
+      locate
+    );
+    res.status(201).json({
+      success: true,
+      message: "파티 생성 완료.",
+      party: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+// 파티 삭제
+app.delete("/api/parties/:id", requireAuth, async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const partyId = req.params["id"];
+    const party = await party.deleteParty(userId, partyId);
+    res.status(200).json({
+      success: true,
+      message: "파티가 삭제되었습니다.",
+      party,
+    });
+  } catch (err) {
+    next(err);
   }
 });
 
