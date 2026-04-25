@@ -1,5 +1,5 @@
-import NoteWorkspace from "../models/NoteWorkspace.ts";
-import AppError from "../utils/AppError.js";
+import NoteWorkspace from "../models/NoteWorkspace";
+import AppError from "../utils/AppError";
 
 export async function saveNoteLayout(userId, openedNotes) {
   const noteWorkspace = await NoteWorkspace.findOneAndUpdate(

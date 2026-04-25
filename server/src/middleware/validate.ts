@@ -9,7 +9,7 @@ export default (schema) => (req, res, next) => {
             path: i.path.join("."),
             message: i.message,
         }));
-        return res.status(400).json({
+        return res.status(400)on({
             error: "ValidationError", issues,
         });
     }

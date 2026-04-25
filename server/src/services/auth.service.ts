@@ -1,5 +1,5 @@
-import User from "../models/User.ts";
-import AppError from "../utils/AppError.js";
+import User from "../models/User";
+import AppError from "../utils/AppError";
 import bcrypt from "bcrypt";
 
 export async function checkSession(userId) {
