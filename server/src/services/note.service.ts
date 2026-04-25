@@ -1,5 +1,5 @@
-import Note from "../models/Note";
-import AppError from "../utils/AppError";
+import Note from "../models/Note.js";
+import AppError from "../utils/AppError.js";
 
 // 노트 생성
 export async function createNote(title, theme, tag, userId) {

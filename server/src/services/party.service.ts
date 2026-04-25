@@ -1,6 +1,6 @@
-import Party from "../models/Party";
+import Party from "../models/Party.js";
 import mongoose from "mongoose";
-import AppError from "../utils/AppError";
+import AppError from "../utils/AppError.js";
 
 // 파티 목록 조회 (페이지네이션, 검색)
 export async function getPartys(page, search) {
