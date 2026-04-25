@@ -15,6 +15,19 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import z from "zod";
 
+const createPartySchema = z.object({
+    title: z.string().min(6, { message: "제목의 최소길이는 6글자 입니다." }),
+    categories: z.string().min(1, { message: "카테고리를 선택해주세요." }),
+    content: z.string().min(6, { message: "내용의 최소길이는 6글자 입니다." }),
+    maximumCapacity: z.coerce.number().min(2, { message: "최소인원은 2명 이상이어야 합니다." }),
+    startDate: z.date().min(new Date(), { message: "시작일은 오늘 이후여야 합니다." }),
+    requiresApproval: z.boolean().default(false),
+    isOffline: z.boolean().default(true),
+    location: z.string().min(6, { message: "장소의 최소길이는 6글자 입니다." }),
+});
+
+type CreatePartyFormValues = z.infer<typeof createPartySchema>;
+
 export default function PartyPage() {
     const [parties, setParties] = useState([]);
     const [searchParams] = useSearchParams();
@@ -23,18 +36,7 @@ export default function PartyPage() {
     const navigate = useNavigate();
     const categories = ['자율', '어학', '취업', '고시/공무원', '취미/교양', '프로그래밍', '수험', '기타'];
 
-    const createPartySchema = z.object({
-        title: z.string().min(6, { message: "제목의 최소길이는 6글자 입니다." }),
-        categories: z.string().min(1, { message: "카테고리를 선택해주세요." }),
-        content: z.string().min(6, { message: "내용의 최소길이는 6글자 입니다." }),
-        maximumCapacity: z.coerce.number().min(2, { message: "최소인원은 2명 이상이어야 합니다." }),
-        startDate: z.date().min(new Date(), { message: "시작일은 오늘 이후여야 합니다." }),
-        requiresApproval: z.boolean().default(false),
-        isOffline: z.boolean().default(true),
-        location: z.string().min(6, { message: "장소의 최소길이는 6글자 입니다." }),
-    });
-
-    const form = useForm<z.infer<typeof createPartySchema>>({
+    const form = useForm<CreatePartyFormValues>({
         resolver: zodResolver(createPartySchema),
         defaultValues: {
             title: "",
@@ -48,7 +50,7 @@ export default function PartyPage() {
         },
     });
 
-    const onSubmit = async (values: z.infer<typeof createPartySchema>) => {
+    const onSubmit = async (values: CreatePartyFormValues) => {
         console.log(values);
     }
 
@@ -83,7 +85,7 @@ export default function PartyPage() {
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="title"
                                     render={({ field }) => (
@@ -96,7 +98,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="content"
                                     render={({ field }) => (
@@ -109,7 +111,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="maximumCapacity"
                                     render={({ field }) => (
@@ -122,7 +124,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="startDate"
                                     render={({ field }) => (
@@ -139,7 +141,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="requiresApproval"
                                     render={({ field }) => (
@@ -157,7 +159,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="isOffline"
                                     render={({ field }) => (
@@ -175,7 +177,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                <FormField<CreatePartyFormValues>
                                     control={form.control}
                                     name="location"
                                     render={({ field }) => (
