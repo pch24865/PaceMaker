@@ -85,8 +85,8 @@ export default function PartyPage() {
                     <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem>
@@ -98,8 +98,8 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="content"
                                     render={({ field }) => (
                                         <FormItem>
@@ -111,8 +111,8 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="maximumCapacity"
                                     render={({ field }) => (
                                         <FormItem>
@@ -124,8 +124,8 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="startDate"
                                     render={({ field }) => (
                                         <FormItem>
@@ -141,8 +141,8 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="requiresApproval"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-row items-center space-x-3 space-y-0">
@@ -159,8 +159,8 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="isOffline"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-row items-center space-x-3 space-y-0">
@@ -177,8 +177,8 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField<CreatePartyFormValues>
-                                    control={form.control}
+                                <FormField
+                                    control={form.control as any}
                                     name="location"
                                     render={({ field }) => (
                                         <FormItem>
