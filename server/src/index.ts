@@ -21,11 +21,13 @@ import * as party from "./services/party.service";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: CLIENT_URL,
     credentials: true,
   },
 });
@@ -41,10 +43,10 @@ app.use(
   })
 );
 
-app.use(expresson());
+app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: CLIENT_URL,
     credentials: true,
     optionsSuccessStatus: 200,
   })
@@ -69,11 +71,11 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 io.use((socket: any, next) => {
-  sessionMiddleware(socket.request as any, {} as any, next);
+  sessionMiddleware(socket.request as any, {} as any, next as any);
 });
 
 app.get("/", (req, res) => {
-  res.status(200)on({ message: "Hello!" });
+  res.status(200).json({ message: "Hello!" });
 });
 
 // 세션 인증
@@ -81,7 +83,7 @@ app.get("/api/auth/me", async (req: any, res, next) => {
   const userId = req.session.userId;
   try {
     const user = await auth.checkSession(userId);
-    res.status(200)on({
+    res.status(200).json({
       success: true,
       message: "인증이 완료되었습니다.",
       user,
@@ -99,7 +101,7 @@ app.post("/api/signin", async (req: any, res, next) => {
     // 세션에 사용자 ID 저장
     req.session.userId = user._id;
     // 사용자정보 반환
-    res.status(200)on({
+    res.status(200).json({
       success: true,
       message: "로그인 성공",
       user,
@@ -114,7 +116,7 @@ app.post("/api/signup", validate(signUpSchema), async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
     const user = await auth.signup(email, password, name);
-    res.status(201)on({
+    res.status(201).json({
       success: true,
       message: "회원가입 성공",
       user,
@@ -129,13 +131,13 @@ app.post("/api/signout", (req: any, res) => {
   req.session.destroy((error: any) => {
     if (error) {
       console.log("로그아웃 에러:", error);
-      return res.status(500)on({
+      return res.status(500).json({
         success: false,
         message: "서버 오류가 발생했습니다",
       });
     }
     res.clearCookie("connect.sid");
-    return res.status(200)on({
+    return res.status(200).json({
       success: true,
       message: "로그아웃 성공",
     });
@@ -152,7 +154,7 @@ app.post(
       const { title, theme, tag } = req.body;
       const userId = req.session.userId;
       const newNote = await note.createNote(title, theme, tag, userId);
-      res.status(201)on({
+      res.status(201).json({
         success: true,
         message: "노트가 생성되었습니다.",
         note: newNote,
@@ -168,7 +170,7 @@ app.get("/api/notes", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
     const notes = await note.getNotes(userId);
-    return res.status(200)on({
+    return res.status(200).json({
       success: true,
       message: "노트 목록 조회 완료!",
       notes,
@@ -181,11 +183,11 @@ app.get("/api/notes", requireAuth, async (req: any, res, next) => {
 // 노트 한 개 저장
 app.patch("/api/notes/:id", requireAuth, async (req: any, res, next) => {
   try {
-    const id  = req.params['id'];
+    const id = req.params['id'];
     const { title, theme, tag, contents } = req.body;
     const userId = req.session.userId;
     const newNote = await note.saveNote(id, title, theme, tag, contents, userId);
-    return res.status(200)on({
+    return res.status(200).json({
       success: true,
       message: "노트 저장 완료!",
       note: newNote,
@@ -201,7 +203,7 @@ app.delete("/api/notes/:id", requireAuth, async (req: any, res, next) => {
     const userId = req.session.userId;
     const { id } = req.params;
     const deletedNote = await note.deleteNote(id, userId);
-    return res.status(200)on({
+    return res.status(200).json({
       success: true,
       message: "노트가 삭제되었습니다.",
       note: deletedNote,
@@ -217,7 +219,7 @@ app.patch("/api/note-layouts", requireAuth, async (req: any, res, next) => {
     const userId = req.session.userId;
     const { openedNotes } = req.body;
     const noteWorkspace = await noteLayout.saveNoteLayout(userId, openedNotes);
-    return res.status(200)on({
+    return res.status(200).json({
       success: true,
       message: "워크스페이스가 저장되었습니다.",
       noteWorkspace,
@@ -232,7 +234,7 @@ app.get("/api/note-layouts", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
     const noteWorkspace = await noteLayout.getNoteLayout(userId);
-    return res.status(200)on({
+    return res.status(200).json({
       success: true,
       message: "워크스페이스 정보 조회 완료.",
       noteWorkspace,
@@ -248,7 +250,7 @@ app.get("/api/parties", async (req, res, next) => {
     const page = parseInt(req.query.page as string, 10) || 1;
     const search = (req.query.search as string) || "";
     const { parties, lastPage } = await party.getPartys(page, search);
-    res.status(200)on({
+    res.status(200).json({
       success: true,
       message: "파티 목록 조회완료.",
       parties,
@@ -286,7 +288,7 @@ app.post("/api/parties", requireAuth, async (req: any, res, next) => {
       isOffline,
       locate
     );
-    res.status(201)on({
+    res.status(201).json({
       success: true,
       message: "파티 생성 완료.",
       party: result,
@@ -302,7 +304,7 @@ app.delete("/api/parties/:id", requireAuth, async (req: any, res, next) => {
     const userId = req.session.userId;
     const partyId = req.params["id"];
     const partyData = await party.deleteParty(userId, partyId);
-    res.status(200)on({
+    res.status(200).json({
       success: true,
       message: "파티가 삭제되었습니다.",
       party: partyData,
