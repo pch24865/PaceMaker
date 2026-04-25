@@ -6,6 +6,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { getParties } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Search } from "lucide-react";
@@ -24,7 +25,7 @@ export default function PartyPage() {
 
     const createPartySchema = z.object({
         title: z.string().min(6, { message: "제목의 최소길이는 6글자 입니다." }),
-        categories: z.array(z.enum(categories)).min(1, { message: "카테고리를 선택해주세요." }),
+        categories: z.string().min(1, { message: "카테고리를 선택해주세요." }),
         content: z.string().min(6, { message: "내용의 최소길이는 6글자 입니다." }),
         maximumCapacity: z.number().min(2, { message: "최소인원은 2명 이상이어야 합니다." }),
         startDate: z.date().min(new Date(), { message: "시작일은 오늘 이후여야 합니다." }),
@@ -32,6 +33,17 @@ export default function PartyPage() {
         isOffline: z.boolean().default(true),
         location: z.string().min(6, { message: "장소의 최소길이는 6글자 입니다." }),
     });
+
+    interface createPartyValues {
+        title: string;
+        categories: string[];
+        content: string;
+        maximumCapacity: number;
+        startDate: Date;
+        requiresApproval: boolean;
+        isOffline: boolean;
+        location: string;
+    }
 
     const form = useForm<z.infer<typeof createPartySchema>>({
         resolver: zodResolver(createPartySchema),
@@ -90,6 +102,84 @@ export default function PartyPage() {
                                             <FormLabel>제목</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="제목을 입력해주세요." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="content"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>내용</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="내용을 입력해주세요." {...field} className="resize-none max-h-[200px] overflow-y-auto" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="maximumCapacity"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>최대인원</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="최대인원을 입력해주세요." {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="startDate"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>시작일</FormLabel>
+                                            <FormControl>
+                                                <Input type="date" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="requiresApproval"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>승인 필요</FormLabel>
+                                            <FormControl>
+                                                <Input type="checkbox" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="isOffline"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>오프라인</FormLabel>
+                                            <FormControl>
+                                                <Input type="checkbox" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="location"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>위치</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="위치를 입력해주세요." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

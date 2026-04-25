@@ -17,7 +17,6 @@ import * as auth from "./services/auth.service.js";
 import * as note from "./services/note.service.js";
 import * as noteLayout from "./services/noteLayout.service.js";
 import * as party from "./services/party.service.js";
-import { success } from "zod";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,7 +25,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
   },
 });
@@ -45,7 +44,7 @@ app.use(
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
     optionsSuccessStatus: 200,
   })

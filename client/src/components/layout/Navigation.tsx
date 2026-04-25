@@ -39,11 +39,7 @@ export const Navigation = () => {
                                 <Link to="/party" className="px-4">파티</Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
-                        <NavigationMenuItem>
-                            <NavigationMenuLink asChild>
-                                <Link to="/study" className="px-4">스터디</Link>
-                            </NavigationMenuLink>
-                        </NavigationMenuItem>
+
                         <NavigationMenuItem>
                             <NavigationMenuTrigger className="bg-transparent">목표 설정</NavigationMenuTrigger>
                             <NavigationMenuContent>
