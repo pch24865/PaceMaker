@@ -13,7 +13,6 @@ export default function Cam() {
     const [isCameraEnabled, setIsCameraEnabled] = useState(true);
     const [isMicEnabled, setIsMicEnabled] = useState(true);
     const [deviceError, setDeviceError] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     async function getMedia(data?: { cameraId?: string, micId?: string }) {
@@ -39,9 +38,7 @@ export default function Cam() {
     }
 
     useEffect(() => {
-        setLoading(true);
         getMedia().then((stream) => {
-            setLoading(false);
             setSelectedCameraId(stream?.getVideoTracks()[0].getSettings().deviceId || "")
             setSelectedMicId(stream?.getAudioTracks()[0].getSettings().deviceId || "")
         });

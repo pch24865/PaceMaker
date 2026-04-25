@@ -15,8 +15,8 @@ export default function SocketIoProvider({ children }: { children: React.ReactNo
     const [isConnected, setIsConnected] = useState(false);
 
     function connectSocket() {
-        // process.env.NODE_ENV === "production" ? "" : "http://localhost:3002"; // Vite Proxy를 사용하기 위해 제거
-        const socketInstance = io("/", {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+        const socketInstance = io(baseUrl, {
             withCredentials: true,
         });
         setSocket(socketInstance);

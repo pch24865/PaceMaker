@@ -1,8 +1,8 @@
 import { PartyCard } from "@/components/features/party/PartyCard";
 import { PartyPagination } from "@/components/features/party/PartyPagination";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,29 +27,18 @@ export default function PartyPage() {
         title: z.string().min(6, { message: "제목의 최소길이는 6글자 입니다." }),
         categories: z.string().min(1, { message: "카테고리를 선택해주세요." }),
         content: z.string().min(6, { message: "내용의 최소길이는 6글자 입니다." }),
-        maximumCapacity: z.number().min(2, { message: "최소인원은 2명 이상이어야 합니다." }),
+        maximumCapacity: z.coerce.number().min(2, { message: "최소인원은 2명 이상이어야 합니다." }),
         startDate: z.date().min(new Date(), { message: "시작일은 오늘 이후여야 합니다." }),
         requiresApproval: z.boolean().default(false),
         isOffline: z.boolean().default(true),
         location: z.string().min(6, { message: "장소의 최소길이는 6글자 입니다." }),
     });
 
-    interface createPartyValues {
-        title: string;
-        categories: string[];
-        content: string;
-        maximumCapacity: number;
-        startDate: Date;
-        requiresApproval: boolean;
-        isOffline: boolean;
-        location: string;
-    }
-
     const form = useForm<z.infer<typeof createPartySchema>>({
         resolver: zodResolver(createPartySchema),
         defaultValues: {
             title: "",
-            categories: [],
+            categories: "",
             content: "",
             maximumCapacity: 2,
             startDate: new Date(),
@@ -91,9 +80,9 @@ export default function PartyPage() {
                     <DialogTrigger asChild>
                         <Button className="ml-auto">모집글 올리기</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-h-[80vh] overflow-y-auto">
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                                 <FormField
                                     control={form.control}
                                     name="title"
@@ -114,7 +103,7 @@ export default function PartyPage() {
                                         <FormItem>
                                             <FormLabel>내용</FormLabel>
                                             <FormControl>
-                                                <Textarea placeholder="내용을 입력해주세요." {...field} className="resize-none max-h-[200px] overflow-y-auto" />
+                                                <Textarea placeholder="내용을 입력해주세요." {...field} className="resize-none max-h-[150px] overflow-y-auto" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -127,7 +116,7 @@ export default function PartyPage() {
                                         <FormItem>
                                             <FormLabel>최대인원</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="최대인원을 입력해주세요." {...field} />
+                                                <Input type="number" placeholder="최대인원을 입력해주세요." {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -140,7 +129,11 @@ export default function PartyPage() {
                                         <FormItem>
                                             <FormLabel>시작일</FormLabel>
                                             <FormControl>
-                                                <Input type="date" {...field} />
+                                                <Input 
+                                                    type="date" 
+                                                    value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : field.value}
+                                                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -150,11 +143,16 @@ export default function PartyPage() {
                                     control={form.control}
                                     name="requiresApproval"
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>승인 필요</FormLabel>
+                                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                             <FormControl>
-                                                <Input type="checkbox" {...field} />
+                                                <Input 
+                                                    type="checkbox" 
+                                                    className="size-4"
+                                                    checked={field.value}
+                                                    onChange={(e) => field.onChange(e.target.checked)}
+                                                />
                                             </FormControl>
+                                            <FormLabel>승인 필요</FormLabel>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -163,11 +161,16 @@ export default function PartyPage() {
                                     control={form.control}
                                     name="isOffline"
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>오프라인</FormLabel>
+                                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                             <FormControl>
-                                                <Input type="checkbox" {...field} />
+                                                <Input 
+                                                    type="checkbox" 
+                                                    className="size-4"
+                                                    checked={field.value}
+                                                    onChange={(e) => field.onChange(e.target.checked)}
+                                                />
                                             </FormControl>
+                                            <FormLabel>오프라인</FormLabel>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -185,7 +188,7 @@ export default function PartyPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit">Submit</Button>
+                                <Button type="submit" className="w-full">등록하기</Button>
                             </form>
                         </Form>
                     </DialogContent>
@@ -213,7 +216,7 @@ export default function PartyPage() {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <Label className="text-12 text-muted-foreground">카테고리</Label>
+                            <Label className="text-12 text-muted-foreground ml-2">카테고리</Label>
                             <hr className="my-1" />
                             <SelectItem value="all">전체</SelectItem>
                             {categories.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}
@@ -222,7 +225,7 @@ export default function PartyPage() {
                 </Select>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                {parties.map((party) => <PartyCard party={party} />)}
+                {parties.map((party: any) => <PartyCard key={party._id} party={party} />)}
             </div>
 
             <PartyPagination currentPage={parseInt(searchParams.get('page') ?? '1') || 1} totalPages={lastPage} onPageChange={handlePagination} />

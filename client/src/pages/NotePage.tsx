@@ -1,5 +1,5 @@
 import NoteWindow from "@/components/features/note/NoteWindow";
-import { createNote, deleteNote, getNoteLayout, saveNoteLayout, type Note as ApiNote, type OpenedNote } from "@/lib/api";
+import { createNote, deleteNote, getNoteLayout, saveNoteLayout, type OpenedNote } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export default function NotePage() {
     const [createNoteTag, setCreateNoteTag] = useState<string>("");
     const bounds = useRef<HTMLDivElement>(null);
 
-    const { notes, setNotes, loading } = useNote();
+    const { notes, setNotes } = useNote();
     // 노트 조회 api
     useEffect(() => {
         async function fetchWorkspace() {
