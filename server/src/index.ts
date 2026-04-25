@@ -7,8 +7,6 @@ import User from "./models/User.js";
 import validate from "./middleware/validate.js";
 import { signUpSchema } from "./schemas/signup.schema.js";
 import { createNoteSchema } from "./schemas/createNote.schema.js";
-import path from "path";
-import { fileURLToPath } from "url";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import * as auth from "./services/auth.service.js";
@@ -16,30 +14,14 @@ import * as note from "./services/note.service.js";
 import * as noteLayout from "./services/noteLayout.service.js";
 import * as party from "./services/party.service.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-connectDB();
+app.set("trust proxy", 1);
 
-app.use(
-  "/",
-  express.static(path.join(__dirname, "../public/out"), {
-    extensions: ["html"],
-  })
-);
+const CLIENT_URL = process.env.CLIENT_URL?.replace(/\/$/, "") || "http://localhost:5173";
+const allowedOrigins = [CLIENT_URL, CLIENT_URL + "/"];
 
 app.use(express.json());
-const rawClientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-const allowedOrigins = [
-  rawClientUrl,
-  rawClientUrl.replace(/\/$/, ""),
-  rawClientUrl.replace(/\/$/, "") + "/",
-];
 
 app.use(
   cors({
@@ -55,31 +37,40 @@ app.use(
   })
 );
 
+if (!process.env.MONGODB_URI) {
+  console.error("CRITICAL: MONGODB_URI is not defined.");
+}
+
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "fallback_secret",
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
+    mongoUrl: process.env.MONGODB_URI || "",
     collectionName: "sessions",
-    ttl: 60 * 60 * 24 * 7, // 세션 유효기간: 7일
+    ttl: 60 * 60 * 24 * 7,
   }),
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
-    httpOnly: true, // XSS 공격 방지
-    secure: true, // Vercel 배포 환경에서는 항상 true여야 함
-    sameSite: "none", // 크로스 도메인 간 쿠키 전송을 위해 필수
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
   },
 });
 app.use(sessionMiddleware);
 
+connectDB();
+
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Hello!" });
+  res.status(200).json({ message: "Hello! API is running" });
 });
 
 // 세션 인증
 app.get("/api/auth/me", async (req: any, res, next) => {
   const userId = req.session.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+  }
   try {
     const user = await auth.checkSession(userId);
     res.status(200).json({
@@ -97,9 +88,7 @@ app.post("/api/signin", async (req: any, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await auth.signin(email, password);
-    // 세션에 사용자 ID 저장
     req.session.userId = user._id;
-    // 사용자정보 반환
     res.status(200).json({
       success: true,
       message: "로그인 성공",
@@ -129,13 +118,12 @@ app.post("/api/signup", validate(signUpSchema), async (req, res, next) => {
 app.post("/api/signout", (req: any, res) => {
   req.session.destroy((error: any) => {
     if (error) {
-      console.log("로그아웃 에러:", error);
-      return res.status(500).json({
-        success: false,
-        message: "서버 오류가 발생했습니다",
-      });
+      return res.status(500).json({ success: false, message: "서버 오류가 발생했습니다" });
     }
-    res.clearCookie("connect.sid");
+    res.clearCookie("connect.sid", {
+      sameSite: "none",
+      secure: true,
+    });
     return res.status(200).json({
       success: true,
       message: "로그아웃 성공",
@@ -144,27 +132,22 @@ app.post("/api/signout", (req: any, res) => {
 });
 
 // 새 노트 생성
-app.post(
-  "/api/notes",
-  validate(createNoteSchema),
-  requireAuth,
-  async (req: any, res, next) => {
-    try {
-      const { title, theme, tag } = req.body;
-      const userId = req.session.userId;
-      const newNote = await note.createNote(title, theme, tag, userId);
-      res.status(201).json({
-        success: true,
-        message: "노트가 생성되었습니다.",
-        note: newNote,
-      });
-    } catch (err) {
-      next(err);
-    }
+app.post("/api/notes", validate(createNoteSchema), requireAuth, async (req: any, res, next) => {
+  try {
+    const { title, theme, tag } = req.body;
+    const userId = req.session.userId;
+    const newNote = await note.createNote(title, theme, tag, userId);
+    res.status(201).json({
+      success: true,
+      message: "노트가 생성되었습니다.",
+      note: newNote,
+    });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
-//노트 불러오기
+// 노트 조회
 app.get("/api/notes", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
@@ -179,7 +162,7 @@ app.get("/api/notes", requireAuth, async (req: any, res, next) => {
   }
 });
 
-// 노트 한 개 저장
+// 노트 저장
 app.patch("/api/notes/:id", requireAuth, async (req: any, res, next) => {
   try {
     const { id } = req.params;
@@ -196,7 +179,7 @@ app.patch("/api/notes/:id", requireAuth, async (req: any, res, next) => {
   }
 });
 
-//노트 한개 삭제
+// 노트 삭제
 app.delete("/api/notes/:id", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
@@ -212,7 +195,7 @@ app.delete("/api/notes/:id", requireAuth, async (req: any, res, next) => {
   }
 });
 
-// 노트 레이아웃 저장
+// 레이아웃 저장
 app.patch("/api/note-layouts", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
@@ -228,7 +211,7 @@ app.patch("/api/note-layouts", requireAuth, async (req: any, res, next) => {
   }
 });
 
-// 노트 레이아웃 조회
+// 레이아웃 조회
 app.get("/api/note-layouts", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
@@ -243,7 +226,7 @@ app.get("/api/note-layouts", requireAuth, async (req: any, res, next) => {
   }
 });
 
-// 파티 목록 조회 (페이지네이션, 검색)
+// 파티 목록
 app.get("/api/parties", async (req, res, next) => {
   try {
     const page = parseInt(req.query.page as string, 10) || 1;
@@ -264,29 +247,8 @@ app.get("/api/parties", async (req, res, next) => {
 app.post("/api/parties", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
-    const {
-      title,
-      category,
-      content,
-      tag,
-      startDate,
-      maximumCapacity,
-      requiresApproval,
-      isOffline,
-      locate,
-    } = req.body;
-    const result = await party.createParty(
-      userId,
-      title,
-      category,
-      content,
-      tag,
-      startDate,
-      maximumCapacity,
-      requiresApproval,
-      isOffline,
-      locate
-    );
+    const { title, category, content, tag, startDate, maximumCapacity, requiresApproval, isOffline, locate } = req.body;
+    const result = await party.createParty(userId, title, category, content, tag, startDate, maximumCapacity, requiresApproval, isOffline, locate);
     res.status(201).json({
       success: true,
       message: "파티 생성 완료.",
@@ -315,10 +277,9 @@ app.delete("/api/parties/:id", requireAuth, async (req: any, res, next) => {
 
 app.use(errorHandler);
 
+const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log("app listening on port " + PORT);
-  });
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 export default app;
