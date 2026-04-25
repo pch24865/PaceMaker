@@ -10,8 +10,6 @@ import { createNoteSchema } from "./schemas/createNote.schema";
 import path from "path";
 import { fileURLToPath } from "url";
 import { requireAuth } from "./middleware/requireAuth";
-import { createServer } from "http";
-import { Server } from "socket.io";
 import { errorHandler } from "./middleware/errorHandler";
 import * as auth from "./services/auth.service";
 import * as note from "./services/note.service";
@@ -24,14 +22,6 @@ const __dirname = path.dirname(__filename);
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 const app = express();
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: CLIENT_URL,
-    credentials: true,
-  },
-});
-
 const PORT = process.env.PORT || 3000;
 
 connectDB();
@@ -69,10 +59,6 @@ const sessionMiddleware = session({
   },
 });
 app.use(sessionMiddleware);
-
-io.use((socket: any, next) => {
-  sessionMiddleware(socket.request as any, {} as any, next as any);
-});
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Hello!" });
@@ -183,7 +169,7 @@ app.get("/api/notes", requireAuth, async (req: any, res, next) => {
 // 노트 한 개 저장
 app.patch("/api/notes/:id", requireAuth, async (req: any, res, next) => {
   try {
-    const id = req.params['id'];
+    const { id } = req.params;
     const { title, theme, tag, contents } = req.body;
     const userId = req.session.userId;
     const newNote = await note.saveNote(id, title, theme, tag, contents, userId);
@@ -302,8 +288,8 @@ app.post("/api/parties", requireAuth, async (req: any, res, next) => {
 app.delete("/api/parties/:id", requireAuth, async (req: any, res, next) => {
   try {
     const userId = req.session.userId;
-    const partyId = req.params["id"];
-    const partyData = await party.deleteParty(userId, partyId);
+    const { id } = req.params;
+    const partyData = await party.deleteParty(userId, id);
     res.status(200).json({
       success: true,
       message: "파티가 삭제되었습니다.",
@@ -314,31 +300,10 @@ app.delete("/api/parties/:id", requireAuth, async (req: any, res, next) => {
   }
 });
 
-// 소켓 테스트
-io.on("connection", (socket) => {
-  const socketSession = (socket.request as any).session;
-  if (!socketSession?.userId) {
-    return;
-  }
-  User.findById(socketSession.userId).then((user: any) => {
-    if (user) socket.data.name = user.name;
-  });
-  console.log("a user connected");
-
-  socket.on("join", (room: string, done: () => void) => {
-    socket.join(room);
-    console.log(socket.data.name, " join room ->", room);
-    done();
-  });
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
-});
-
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== 'production') {
-  server.listen(PORT, () => {
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
     console.log("app listening on port " + PORT);
   });
 }
