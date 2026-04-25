@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { io, Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
 
 interface SocketIoContextType {
     socket: Socket | undefined;
@@ -15,11 +15,8 @@ export default function SocketIoProvider({ children }: { children: React.ReactNo
     const [isConnected, setIsConnected] = useState(false);
 
     function connectSocket() {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-        const socketInstance = io(baseUrl, {
-            withCredentials: true,
-        });
-        setSocket(socketInstance);
+        // 소켓 기능 비활성화 (서버리스 환경 호환)
+        console.log("Socket connection disabled in this environment.");
     }
 
     useEffect(() => {
