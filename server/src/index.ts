@@ -67,8 +67,8 @@ const sessionMiddleware = session({
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
     httpOnly: true, // XSS 공격 방지
-    secure: process.env.NODE_ENV === "production", // HTTPS에서만 전송 (프로덕션)
-    sameSite: "lax", // CSRF 공격 방지
+    secure: true, // Vercel 배포 환경에서는 항상 true여야 함
+    sameSite: "none", // 크로스 도메인 간 쿠키 전송을 위해 필수
   },
 });
 app.use(sessionMiddleware);
