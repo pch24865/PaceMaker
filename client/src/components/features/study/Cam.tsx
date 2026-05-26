@@ -35,7 +35,7 @@ export default function Cam() {
         } catch (error: any) {
             setDeviceError(true);
         }
-    }
+    }    
 
     useEffect(() => {
         getMedia().then((stream) => {

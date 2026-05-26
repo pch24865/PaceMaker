@@ -34,7 +34,7 @@ export async function signin(email, password) {
 export async function signup(email, password, name) {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw AppError(409, "이미 존재하는 이메일입니다");
+    throw new AppError(409, "이미 존재하는 이메일입니다");
   }
 
   // bcrypt로 암호화
